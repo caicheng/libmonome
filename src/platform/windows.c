@@ -290,6 +290,30 @@ char *monome_platform_get_dev_serial(const char *path) {
 			};
 
 			serial = m_get_serial_from_instance_id(instance_id);
+				if(serial == NULL) {
+				fprintf(stderr, "try get parent");
+				// get parent device id
+				DEVINST parentDevInst;
+				CONFIGRET cr = CM_Get_Parent(&parentDevInst, devinfo.DevInst, 0);
+				if(cr == CR_SUCCESS) {
+					char parentDeviceInstanceId[256];
+					cr = CM_Get_Device_ID(parentDevInst, parentDeviceInstanceId,
+										  sizeof(parentDeviceInstanceId), 0);
+					if(cr == CR_SUCCESS) {
+						fprintf(stderr,
+								"Parent Device Instance "
+								"ID: %s\n",
+								parentDeviceInstanceId);
+						serial = m_get_serial_from_instance_id(parentDeviceInstanceId);
+					} else {
+						fprintf(stderr, "Failed to get parent "
+										"device instance ID\n");
+					}
+				} else {
+					fprintf(stderr, "Failed to get parent "
+									"device instance\n");
+				}
+			}
 			break;
 		}
 
